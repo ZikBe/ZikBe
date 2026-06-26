@@ -24,32 +24,11 @@
             line-height: 1.6;
         }
 
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            padding: 60px 20px;
-        }
-
-        header {
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            margin: 0 0 10px 0;
-            letter-spacing: -0.03em;
-        }
-
-        h1 span {
-            color: var(--rust-color);
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            margin: 0;
-        }
+        .container { max-width: 850px; margin: 0 auto; padding: 60px 20px; }
+        header { margin-bottom: 40px; }
+        h1 { font-size: 2.5rem; font-weight: 800; margin: 0 0 10px 0; letter-spacing: -0.03em; }
+        h1 span { color: var(--rust-color); }
+        .subtitle { color: var(--text-muted); font-size: 1.1rem; margin: 0; }
 
         .disclaimer {
             background: linear-gradient(135deg, #1c1c21 0%, #16161a 100%);
@@ -63,9 +42,7 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
 
-        .bug-grid {
-            display: block;
-        }
+        .bug-grid { display: block; }
 
         .bug-card {
             background-color: var(--bg-card);
@@ -83,36 +60,12 @@
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
-        .bug-header {
-            display: table;
-            width: 100%;
-            margin-bottom: 12px;
-        }
-
-        .bug-title-wrapper {
-            display: table-cell;
-            vertical-align: middle;
-        }
-
-        .bug-id {
-            color: var(--rust-color);
-            font-weight: 700;
-            margin-right: 8px;
-        }
-
-        .bug-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #ffffff;
-        }
-
-        .bug-badge-wrapper {
-            display: table-cell;
-            vertical-align: middle;
-            text-align: right;
-            width: 120px;
-        }
-
+        .bug-header { display: table; width: 100%; margin-bottom: 12px; }
+        .bug-title-wrapper { display: table-cell; vertical-align: middle; }
+        .bug-id { color: var(--rust-color); font-weight: 700; margin-right: 8px; }
+        .bug-title { font-size: 1.25rem; font-weight: 600; color: #ffffff; }
+        .bug-badge-wrapper { display: table-cell; vertical-align: middle; text-align: right; width: 120px; }
+        
         .category-tag {
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-muted);
@@ -139,16 +92,32 @@
             margin-top: 5px;
         }
 
-        .video-btn:hover {
-            background-color: var(--rust-color);
-            color: #ffffff;
+        .video-btn:hover { background-color: var(--rust-color); color: #ffffff; }
+
+        #loading { text-align: center; color: var(--text-muted); font-size: 1.1rem; padding: 40px; }
+
+        .load-more-container {
+            text-align: center;
+            margin-top: 40px;
         }
 
-        #loading {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            padding: 40px;
+        .load-more-btn {
+            background-color: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 15px 30px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: none; /* Скрыта до загрузки данных */
+        }
+
+        .load-more-btn:hover {
+            border-color: var(--rust-color);
+            color: var(--rust-color);
+            background-color: rgba(205, 66, 43, 0.05);
         }
     </style>
 </head>
@@ -166,49 +135,79 @@
 
     <div id="loading">Accessing bug database...</div>
     <div id="bug-list" class="bug-grid"></div>
+
+    <div class="load-more-container">
+        <button id="load-more-btn" class="load-more-btn" onclick="showRemainingBugs()">Load Full Archive</button>
+    </div>
 </div>
 
 <script>
     const csvUrl = 'https://docs.google.com/spreadsheets/d/1LWbsLUTKA6VN42hJa-zmxWIlqQ-aVV-cJS0Cb0eC2Tg/export?format=csv';
+    let allBugs = [];
 
     async function loadBugs() {
         try {
             const response = await fetch(csvUrl);
             const data = await response.text();
             const rows = data.split('\n').slice(1);
-            const bugList = document.getElementById('bug-list');
+            
             document.getElementById('loading').style.display = 'none';
 
-            rows.forEach(row => {
-                if (!row.trim()) return;
-                
-                const columns = row.split(',');
-                if (columns.length >= 4) {
-                    const id = columns[0].trim();
-                    const title = columns[1].trim();
-                    const link = columns[2].trim();
-                    const category = columns[3].trim();
+            // Очищаем пустые строки и сохраняем всё в массив
+            allBugs = rows.filter(row => row.trim().length > 0);
 
-                    const card = document.createElement('div');
-                    card.className = 'bug-card';
-                    card.innerHTML = `
-                        <div class="bug-header">
-                            <div class="bug-title-wrapper">
-                                <span class="bug-title"><span class="bug-id">#${id}</span>${title}</span>
-                            </div>
-                            <div class="bug-badge-wrapper">
-                                <span class="category-tag">${category}</span>
-                            </div>
-                        </div>
-                        <a href="${link}" target="_blank" class="video-btn">Watch Evidence →</a>
-                    `;
-                    bugList.appendChild(card);
-                }
-            });
+            // Выводим первые 6
+            renderBugs(0, 6);
+
+            // Если багов больше 6, показываем кнопку
+            if (allBugs.length > 6) {
+                const btn = document.getElementById('load-more-btn');
+                btn.style.display = 'inline-block';
+                btn.innerText = `Load Full Archive (${allBugs.length - 6} more)`;
+            }
+
         } catch (error) {
             document.getElementById('loading').innerText = 'Error loading database.';
         }
     }
+
+    function renderBugs(startIndex, endIndex) {
+        const bugList = document.getElementById('bug-list');
+        const bugsToRender = allBugs.slice(startIndex, endIndex);
+
+        bugsToRender.forEach(row => {
+            const columns = row.split(',');
+            if (columns.length >= 4) {
+                const id = columns[0].trim();
+                const title = columns[1].trim();
+                const link = columns[2].trim();
+                const category = columns[3].trim();
+
+                const card = document.createElement('div');
+                card.className = 'bug-card';
+                card.innerHTML = `
+                    <div class="bug-header">
+                        <div class="bug-title-wrapper">
+                            <span class="bug-title"><span class="bug-id">#${id}</span>${title}</span>
+                        </div>
+                        <div class="bug-badge-wrapper">
+                            <span class="category-tag">${category}</span>
+                        </div>
+                    </div>
+                    <a href="${link}" target="_blank" class="video-btn">Watch Evidence →</a>
+                `;
+                bugList.appendChild(card);
+            }
+        });
+    }
+
+    function showRemainingBugs() {
+        // Выводим все остальные баги начиная с 6-го (индекс 6)
+        renderBugs(6, allBugs.length);
+        // Прячем кнопку
+        document.getElementById('load-more-btn').style.display = 'none';
+    }
+
     loadBugs();
 </script>
 </body>
