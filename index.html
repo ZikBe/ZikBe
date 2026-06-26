@@ -3,28 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rust QA Portfolio | Bug Hunter</title>
+    <title>Rust QA Portfolio | ZikBe</title>
     <style>
-        body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; margin: 0; padding: 40px 20px; }
-        .container { max-width: 900px; margin: auto; }
-        h1 { color: #CE422B; border-bottom: 2px solid #333; padding-bottom: 10px; }
-        .disclaimer { background-color: #1e1e1e; border-left: 4px solid #CE422B; padding: 15px; margin-bottom: 30px; font-size: 0.95em; line-height: 1.5; }
-        .bug-card { background-color: #1e1e1e; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .bug-title { font-size: 1.2em; font-weight: bold; color: #fff; margin-bottom: 10px; }
-        .category-tag { background-color: #444; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: normal; margin-left: 10px; }
-        a.video-link { display: inline-block; margin-top: 10px; color: #5da9e9; text-decoration: none; font-weight: bold; }
-        #loading { color: #888; font-style: italic; }
+        :root {
+            --bg-main: #0d0d0f;
+            --bg-card: #16161a;
+            --rust-color: #cd422b;
+            --rust-hover: #e04e37;
+            --text-main: #f1f1f4;
+            --text-muted: #8a8a93;
+            --border: #232329;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        header {
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.03em;
+        }
+
+        h1 span {
+            color: var(--rust-color);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        .disclaimer {
+            background: linear-gradient(135deg, #1c1c21 0%, #16161a 100%);
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--rust-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+            font-size: 0.95rem;
+            color: var(--text-main);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .bug-grid {
+            display: block;
+        }
+
+        .bug-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .bug-card:hover {
+            transform: translateY(-2px);
+            border-color: #3a3a45;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .bug-header {
+            display: table;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+
+        .bug-title-wrapper {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .bug-id {
+            color: var(--rust-color);
+            font-weight: 700;
+            margin-right: 8px;
+        }
+
+        .bug-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .bug-badge-wrapper {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: right;
+            width: 120px;
+        }
+
+        .category-tag {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .video-btn {
+            display: inline-block;
+            background-color: rgba(205, 66, 43, 0.1);
+            color: var(--rust-color);
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: background-color 0.2s, color 0.2s;
+            border: 1px solid rgba(205, 66, 43, 0.15);
+            margin-top: 5px;
+        }
+
+        .video-btn:hover {
+            background-color: var(--rust-color);
+            color: #ffffff;
+        }
+
+        #loading {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            padding: 40px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Rust Bug Reports Archive</h1>
+    <header>
+        <h1>Rust Bug Hunting <span>Archive</span></h1>
+        <p class="subtitle">Independent QA Research & Vulnerability Reports</p>
+    </header>
+    
     <div class="disclaimer">
         <strong>Author's Note:</strong> The vulnerabilities and bugs listed below were independently discovered by me and originally published in a community channel. As the raw source files are no longer available, the provided video evidence contains channel watermarks. My authorship is verified via the author tag on the original posts.
     </div>
-    <div id="loading">Loading database...</div>
-    <div id="bug-list"></div>
+
+    <div id="loading">Accessing bug database...</div>
+    <div id="bug-list" class="bug-grid"></div>
 </div>
 
 <script>
@@ -40,17 +181,26 @@
 
             rows.forEach(row => {
                 if (!row.trim()) return;
-                // Разделяем колонки: 0 - ID, 1 - Title, 2 - Link, 3 - Category
+                
                 const columns = row.split(',');
                 if (columns.length >= 4) {
+                    const id = columns[0].trim();
+                    const title = columns[1].trim();
+                    const link = columns[2].trim();
+                    const category = columns[3].trim();
+
                     const card = document.createElement('div');
                     card.className = 'bug-card';
                     card.innerHTML = `
-                        <div class="bug-title">
-                            #${columns[0].trim()} ${columns[1].trim()}
-                            <span class="category-tag">${columns[3].trim()}</span>
+                        <div class="bug-header">
+                            <div class="bug-title-wrapper">
+                                <span class="bug-title"><span class="bug-id">#${id}</span>${title}</span>
+                            </div>
+                            <div class="bug-badge-wrapper">
+                                <span class="category-tag">${category}</span>
+                            </div>
                         </div>
-                        <a href="${columns[2].trim()}" target="_blank" class="video-link">Watch Video / View Original Post -></a>
+                        <a href="${link}" target="_blank" class="video-btn">Watch Evidence →</a>
                     `;
                     bugList.appendChild(card);
                 }
