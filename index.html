@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rust QA Portfolio | Bug Hunter</title>
+    <style>
+        body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; margin: 0; padding: 40px 20px; }
+        .container { max-width: 900px; margin: auto; }
+        h1 { color: #CE422B; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .disclaimer { background-color: #1e1e1e; border-left: 4px solid #CE422B; padding: 15px; margin-bottom: 30px; font-size: 0.95em; line-height: 1.5; }
+        .bug-card { background-color: #1e1e1e; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .bug-title { font-size: 1.2em; font-weight: bold; color: #fff; margin-bottom: 10px; }
+        .category-tag { background-color: #444; color: white; padding: 3px 8px; border-radius: 4px; font-size: 0.8em; font-weight: normal; margin-left: 10px; }
+        a.video-link { display: inline-block; margin-top: 10px; color: #5da9e9; text-decoration: none; font-weight: bold; }
+        #loading { color: #888; font-style: italic; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Rust Bug Reports Archive</h1>
+    <div class="disclaimer">
+        <strong>Author's Note:</strong> The vulnerabilities and bugs listed below were independently discovered by me and originally published in a community channel. As the raw source files are no longer available, the provided video evidence contains channel watermarks. My authorship is verified via the author tag on the original posts.
+    </div>
+    <div id="loading">Loading database...</div>
+    <div id="bug-list"></div>
+</div>
+
+<script>
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/1LWbsLUTKA6VN42hJa-zmxWIlqQ-aVV-cJS0Cb0eC2Tg/export?format=csv';
+
+    async function loadBugs() {
+        try {
+            const response = await fetch(csvUrl);
+            const data = await response.text();
+            const rows = data.split('\n').slice(1);
+            const bugList = document.getElementById('bug-list');
+            document.getElementById('loading').style.display = 'none';
+
+            rows.forEach(row => {
+                if (!row.trim()) return;
+                // Разделяем колонки: 0 - ID, 1 - Title, 2 - Link, 3 - Category
+                const columns = row.split(',');
+                if (columns.length >= 4) {
+                    const card = document.createElement('div');
+                    card.className = 'bug-card';
+                    card.innerHTML = `
+                        <div class="bug-title">
+                            #${columns[0].trim()} ${columns[1].trim()}
+                            <span class="category-tag">${columns[3].trim()}</span>
+                        </div>
+                        <a href="${columns[2].trim()}" target="_blank" class="video-link">Watch Video / View Original Post -></a>
+                    `;
+                    bugList.appendChild(card);
+                }
+            });
+        } catch (error) {
+            document.getElementById('loading').innerText = 'Error loading database.';
+        }
+    }
+    loadBugs();
+</script>
+</body>
+</html>
